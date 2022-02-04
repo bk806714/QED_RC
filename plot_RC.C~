@@ -1,0 +1,258 @@
+void read_and_draw_unp(string infile,  TGraph *gunp);
+void read_and_draw_pol(string infile,  TGraph *gnoQED, TGraph *gQED);
+void draw_plot_unp()
+{
+  // const int num_plot=3;
+  const int num_plot=2;
+  //const int num_plot=1;
+  TGraph *gunp[10];
+  string file_name1,file_name[10];
+  //Int_t Q[num_plot]={3,5,10};
+  Int_t  Q[num_plot]={3,10};
+
+    for(int i=0;i<num_plot;i++)
+      {
+	gunp[i]= new TGraph();
+	/// FOR MODIFIED STRUCTURE FUNCTIONS
+	//file_name1[i]=Form("Unp_Q%d_Rot_QED_modifiedFUU",Q[i]);
+
+	// FOR UNMODIFIED STRUCTURE FUNCTION
+	//file_name1[i]=Form("Unp_Q%d_Rot_QED",Q[i]);
+
+	// FOR SIEVERS  FUNCTION
+	//file_name1[i]=Form("Siv_Q%d_Rot_QED",Q[i]);
+
+	// for JLAB KINEMATICS
+	file_name1="Unp_JLab_kine2_data";
+
+
+
+
+	file_name[i]=Form("/u/home/karki/QEDSIDIS-main/%s.txt",file_name1.c_str());
+	read_and_draw_unp(file_name[i], gunp[i] );
+      }
+
+ 
+ 
+  TCanvas *c2 = new TCanvas();
+  c2->SetGrid();
+  TLegend *legend=new TLegend(0.6,0.65,0.88,0.85);// from(x1,y1) to (x2,y2)
+  legend->SetTextFont(72);
+  legend->SetTextSize(0.04);
+  for(int i=0;i<num_plot;i++)
+    {
+      gunp[i]->SetMarkerStyle(20);
+      gunp[i]->GetYaxis()->SetRangeUser(0,1.8);
+      gunp[i]->SetMarkerColor(i+1);
+      legend->AddEntry(gunp[i],Form("Q=%d GeV",Q[i]),"P");
+      // gunp3->SetLineColor(2);
+      if(i==0)
+	{
+	  gunp[i]->Draw("AP");
+	  gunp[i]->GetXaxis()->SetTitle("q_{T}/Q");
+	  gunp[i]->GetYaxis()->SetTitle("#sigma_{noRC}/#sigma_{RC}");
+	}
+      else
+	gunp[i]->Draw("Psame");
+    }
+  legend->Draw();
+  TLine *line= new TLine(0,1,1.6,1);
+  line->SetLineColor(4);
+  line->SetLineWidth(3);
+  line->SetLineStyle(2);
+  line->Draw();
+}
+
+
+
+
+
+
+
+void read_and_draw_unp(string infile,  TGraph *gunp )
+{
+
+  const int num_tot=100;
+  ifstream file_RC;
+  file_RC.open(infile);
+
+  if(!file_RC )
+    {
+    cout<<"Check your input file "<<endl;
+    exit(-1);
+    }
+  
+  Double_t qT_Q,sigma_noRC,sigma_RC,Esigma_noRC;
+  Double_t RC,E_RC;
+  int i=0;
+
+  while(file_RC >> qT_Q >> sigma_noRC >>   sigma_RC >> Esigma_noRC)
+ 
+    {
+      
+      RC=sigma_noRC/sigma_RC;
+      //cout<<i<<"  "<<qT_Q<<"   "<<sigma_RC<<"     "<<sigma_noRC<<"    "<<RC<<endl;
+      //  gunp->Set(gunp->GetN()+1);
+      // gunp->SetPoint(gunp->GetN()+1,qT_Q,RC);
+      gunp->SetPoint(i,qT_Q,RC);
+      i++;
+    
+    }
+   cout<<"total points "<<i<<endl;
+
+  
+   //gunp->Draw("AP");
+   //gunp->SetMarkerStyle(20);
+  //gunp->SetMarkerColor(2);
+  // gunp10->SetLineColor(2);
+  // gunp10->Draw("AP");
+  //
+
+  
+}
+
+
+
+
+
+
+////////////////////////For Sievers and Collins Functions //////////////////
+void draw_pol(  Int_t Q=5)
+{
+
+  cout<<"Enter the Value of Q 5 or 10"<<endl;
+  cin>>Q;
+  int tot=0; //only siverss
+  string file_name_siv,file_name_tot,file_name_S,file_name_T;
+
+//file_name_siv=Form("Siv_Q%d_Rot_QED",Q);
+ file_name_siv=Form("Pol_EIC_%d_Siv_constAlpha.txt",Q);
+ file_name_tot=Form("Pol_EIC_%d.txt",Q);
+
+ file_name_S=Form("/u/home/karki/QEDSIDIS-main/%s.txt",file_name_siv.c_str());
+ file_name_T=Form("/u/home/karki/QEDSIDIS-main/%s.txt",file_name_tot.c_str());
+  const int num_tot=100;
+  ifstream file_RC_siv;
+  file_RC_siv.open(file_name_S);
+
+  if(!file_RC_siv )
+    {
+    cout<<"Check your input file "<<endl;
+    exit(-1);
+    }
+  
+
+ 
+  Double_t qT_Q_siv,sigma_noRC_siv,sigma_RC_siv,Esigma_noRC_siv;
+  Double_t qT_Q_tot,sigma_noRC_tot,sigma_RC_tot,Esigma_noRC_tot;
+  int i=0;
+  TGraph *gnoQED_siv, *gQED_siv;
+  gnoQED_siv= new TGraph();
+  gQED_siv= new TGraph();
+
+
+TGraph *gnoQED_tot, *gQED_tot;
+  gnoQED_tot= new TGraph();
+  gQED_tot= new TGraph();
+
+  // READ THE SIVERS ASYMETTRY ONLY 
+  while(file_RC_siv >> qT_Q_siv >> sigma_noRC_siv >>   sigma_RC_siv >> Esigma_noRC_siv)
+ 
+    {
+     
+      cout<<i<<"  "<<qT_Q_siv<<"   "<<sigma_RC_siv<<"     "<<sigma_noRC_siv<<"    "<<endl;
+      
+      gnoQED_siv->SetPoint(i,qT_Q_siv,sigma_noRC_siv);
+       gQED_siv->SetPoint(i,qT_Q_siv,sigma_RC_siv);
+
+      i++;
+    
+    }
+
+  if(tot==1)// i.e for total assymetry
+    {
+ifstream file_RC_tot;
+  file_RC_tot.open(file_name_T);
+
+  if(!file_RC_tot )
+    {
+    cout<<"Check your input file "<<endl;
+    exit(-1);
+    }
+
+
+
+  ////////// READ THE SIVERS AND COLLINS ASSYMETRY FILE I.E TOTAL ASYMMETRY
+ while(file_RC_tot >> qT_Q_tot >> sigma_noRC_tot >>   sigma_RC_tot >> Esigma_noRC_tot)
+ 
+    {
+      
+      // RC=sigma_noRC/sigma_RC;
+      cout<<i<<"  "<<qT_Q_tot<<"   "<<sigma_RC_tot<<"     "<<sigma_noRC_tot<<"    "<<endl;
+      
+      //gnoQED_tot->SetPoint(i,qT_Q_tot,sigma_noRC_tot);
+      gQED_tot->SetPoint(i,qT_Q_tot,sigma_RC_tot);
+
+      i++;
+    
+    }
+
+    }
+
+  cout<<"total points "<<i<<endl;
+  
+  TCanvas *c2;
+
+  TLegend *legend;// from(x1,y1) to (x2,y2)
+
+  c2=  new TCanvas(Form("c%d",2), Form("c%d",2) );
+  c2->SetGrid();
+  legend=new TLegend(0.6,0.65,0.88,0.85);
+  legend->SetTextFont(72);
+  legend->SetTextSize(0.04);
+
+  gnoQED_siv->SetLineStyle(2);
+  gnoQED_siv->SetLineColor(3);
+  gnoQED_siv->SetLineWidth(3);
+  gnoQED_siv->Draw("AL");
+
+
+  gQED_siv->Draw("Lsame");
+  gQED_siv->SetLineStyle(2);
+  gQED_siv->SetLineColor(3);
+  gQED_siv->SetLineWidth(3);
+
+
+
+  if(tot==1)
+    {
+  gQED_tot->Draw("Lsame");
+  gQED_tot->SetLineStyle(1);
+  gQED_tot->SetLineColor(2);
+  gQED_tot->SetLineWidth(2);
+    }
+
+
+      // gunp3->SetLineColor(2);
+      
+     
+//gnoQED[i]->GetYaxis()->SetRangeUser(0,1.8);
+      // gnoQED->GetXaxis()->SetTitle("q_{T}/Q");
+      // gnoQED->GetYaxis()->SetTitle("#sigma_{noRC}/#sigma_{RC}");
+     
+     
+      //legend->AddEntry(gnoQED,Form("Q=%d GeV No QED ",Q),"P");
+      // legend->AddEntry(gQED,Form("Q=%d GeV With QED",Q),"P");
+      //legend->Draw();
+    }
+ 
+  /*
+  TLine *line= new TLine(0,1,1.6,1);
+  line->SetLineColor(4);
+  line->SetLineWidth(3);
+  line->SetLineStyle(2);
+  line->Draw();
+  */
+  
+   
+  

@@ -1,0 +1,4 @@
+void test()
+{
+  int add_factor=10;
+}
